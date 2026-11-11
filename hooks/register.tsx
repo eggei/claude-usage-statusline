@@ -1,5 +1,5 @@
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register, SessionRateLimit } from 'claude-code'
+import type { CommandRunInput, CommandRunResult, EngineInterface, Register, SessionRateLimit, Settings } from 'claude-code'
 
 import type { Limit, Usage } from '../types'
 
@@ -66,22 +66,64 @@ const countdown = (resetsAt: number, at: number): string => {
   return '0m'
 }
 
+// The effort the settings give the model: its `modelSettings` entry, else the top-level `effortLevel`.
+const settingsEffort = (settings: Settings, model: string): string | undefined => {
+  const perModel = settings.modelSettings
+  if (perModel && typeof perModel === 'object') {
+    const short = shortModel(model)
+    for (const [id, entry] of Object.entries(perModel as Record<string, unknown>)) {
+      if (id !== model && shortModel(id) !== short) continue
+      const level = entry && typeof entry === 'object' ? (entry as { effortLevel?: unknown }).effortLevel : undefined
+      if (typeof level === 'string') return level
+    }
+  }
+  return typeof settings.effortLevel === 'string' ? settings.effortLevel : undefined
+}
+
+// What the session's model and effort last read as; a write happens only when one of them moves.
+let seenModel: string | undefined
+let seenEffort: string | undefined
+
+const syncModelAndEffort = async ($: EngineInterface) => {
+  const [model, settings] = await Promise.all([$.session.model(), $.settings.read()])
+  const effort = settingsEffort(settings, model)
+  const modelChanged = model !== seenModel
+  const effortChanged = effort !== seenEffort
+  seenModel = model
+  seenEffort = effort
+  if (!modelChanged && !effortChanged) return
+  const short = shortModel(model)
+  await update($, usage, u => ({
+    ...u,
+    model: modelChanged ? short : u.model,
+    effort: effortChanged && effort !== undefined ? effort : u.effort,
+  }))
+}
+
 const refresh = async ($: EngineInterface) => {
-  const [model, git] = await Promise.all([$.session.model(), gitInfo($)])
-  await update($, usage, u => ({ ...u, model: shortModel(model), ...git }))
+  const [git] = await Promise.all([gitInfo($), syncModelAndEffort($)])
+  await update($, usage, u => (u.branch === git.branch && u.worktree === git.worktree ? u : { ...u, ...git }))
+}
+
+const syncAfterCommand = async (
+  $: EngineInterface,
+  e: CommandRunInput,
+  next: (e: CommandRunInput) => Promise<CommandRunResult>,
+) => {
+  const result = await next(e)
+  await syncModelAndEffort($)
+  return result
 }
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const result = await next(e)
-    const [stats, effort, compact] = await Promise.all([
+    const [stats, compact] = await Promise.all([
       $.session.usage(),
-      $.settings.read({ key: 'effortLevel' }),
       $.env.get('CLAUDE_AUTOCOMPACT_PCT_OVERRIDE'),
     ])
     await update($, usage, u => ({
       ...u,
-      effort: u.effort ?? (typeof effort === 'string' ? effort : undefined),
       contextPercent: stats.context.percent,
       limits: limitsOf(stats.rateLimits),
       compactPercent: Number(compact) > 0 ? Number(compact) : 100,
@@ -90,8 +132,20 @@ export const register: Register = on => {
     await refresh($)
     // Keep the reset countdowns current between turns.
     $.clock.every(60_000, async () => { const t = await $.clock.now(); await update($, now, () => t) })
+    // No event fires when the model picker or /effort changes the session, so poll; a write happens only on a change.
+    $.clock.every(1_000, () => syncModelAndEffort($).catch(() => undefined))
     return result
   })
+
+  // /model and /effort with arguments change the session at once; the picker they open without arguments is caught by the poll.
+  on('command.run', { command: 'model' }, syncAfterCommand).catch(($, e, next) => next(e))
+  on('command.run', { command: 'effort' }, syncAfterCommand).catch(($, e, next) => next(e))
+
+  on('config.set', async ($, e, next) => {
+    const result = await next(e)
+    if (/model|effort/i.test(e.key)) await syncModelAndEffort($)
+    return result
+  }).catch(($, e, next) => next(e))
 
   on('session.measure', async ($, e, next) => {
     await update($, usage, u => ({

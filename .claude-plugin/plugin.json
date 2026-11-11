@@ -1,6 +1,6 @@
 {
   "name": "usage-statusline",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Model, effort, context meter, 5-hour and weekly usage, and git branch under the prompt",
   "author": { "name": "eggei" },
   "license": "MIT",

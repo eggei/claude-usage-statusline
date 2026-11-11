@@ -13,7 +13,7 @@ O5.5 Ⓗ | ▰▰▱▱ 55% | 41% 2h | 92% 3d | my-project ⎇  main
 | Segment | Meaning |
 | --- | --- |
 | `O5.5` | The current model, shortened: Opus 5.5 → `O5.5`, Sonnet 5.5 → `S5.5`, Haiku 5.5 → `H5.5`. |
-| `Ⓗ` | Reasoning effort: Ⓛ low (cyan), Ⓜ medium (green), Ⓗ high (orange), Ⓧ xhigh (red), ⓂⓍ max (magenta). Appears after the first model request if `effortLevel` isn't set. |
+| `Ⓗ` | Reasoning effort: Ⓛ low (cyan), Ⓜ medium (green), Ⓗ high (orange), Ⓧ xhigh (red), ⓂⓍ max (magenta). Follows `/model`, `/effort` and the model picker within a second; the level a turn actually runs at wins once a request goes out. |
 | `▰▰▱▱ 55%` | How full the context window is. The four boxes fill toward the auto-compact point (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, or the whole window if unset). Gray, then orange above 20%, then bold red when the meter is 90%+ full. |
 | `41% 2h` | 5-hour usage limit: percent used and time until it resets. |
 | `92% 3d` | Weekly usage limit: percent used and time until it resets. Either limit turns bold red at 90%. |
