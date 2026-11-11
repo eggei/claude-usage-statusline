@@ -1,0 +1,13 @@
+{
+  "name": "claude-usage-statusline",
+  "owner": {
+    "name": "eggei"
+  },
+  "plugins": [
+    {
+      "name": "usage-statusline",
+      "source": "./"
+    }
+  ],
+  "description": "A Claude Code status line showing model, effort, context and plan usage under the prompt"
+}
