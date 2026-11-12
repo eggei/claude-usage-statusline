@@ -19,7 +19,7 @@ test('draws the status line above the engine hint, styled as the script', async 
             effort: 'high',
             contextPercent: 12,
             limits: [
-              { kind: 'five_hour', percentUsed: 40, resetsAt: NOW + 2 * 3600_000 + 60_000 },
+              { kind: 'five_hour', percentUsed: 75, resetsAt: NOW + 2 * 3600_000 + 60_000 },
               { kind: 'seven_day', percentUsed: 95, resetsAt: NOW + 3 * 86400_000 + 60_000 },
             ],
             worktree: 'my-project',
@@ -39,10 +39,13 @@ test('draws the status line above the engine hint, styled as the script', async 
 
   const ui = await $.ui.mount(HINT)
   const line = await ui.find({ type: 'Text', text: /^O5\.5/ })
-  expect(line?.text).toBe('O5.5 Ⓗ | ▰▰▱▱ 12% | 40% 2h | 95% 3d | my-project ⎇  main')
+  expect(line?.text).toBe('O5.5 Ⓗ | ▰▰▱▱ 12% | 75% 2h | 95% 3d | my-project ⎇  main')
   // 12% of a 25% auto-compact threshold fills two boxes; 12% is under 20%, so gray
   expect((await ui.find({ type: 'Text', text: /^▰+$/ }))?.props.color).toBe('#8a8a8a')
   expect((await ui.find({ type: 'Text', text: /^Ⓗ$/ }))?.props.color).toBe('#ffaf00')
+  const yellow = await ui.find({ type: 'Text', text: /^75%$/ })
+  expect(yellow?.props.color).toBe('#ffff00')
+  expect(yellow?.props.bold).toBeFalsy()
   const red = await ui.find({ type: 'Text', text: /^95%$/ })
   expect(red?.props.color).toBe('#ff0000')
   expect(red?.props.bold).toBe(true)

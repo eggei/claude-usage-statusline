@@ -16,7 +16,7 @@ O5.5 Ⓗ | ▰▰▱▱ 55% | 41% 2h | 92% 3d | my-project ⎇  main
 | `Ⓗ` | Reasoning effort: Ⓛ low (cyan), Ⓜ medium (green), Ⓗ high (orange), Ⓧ xhigh (red), ⓂⓍ max (magenta). Follows `/model`, `/effort` and the model picker within a second; the level a turn actually runs at wins once a request goes out. |
 | `▰▰▱▱ 55%` | How full the context window is. The four boxes fill toward the auto-compact point (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, or the whole window if unset). Gray, then orange above 20%, then bold red when the meter is 90%+ full. |
 | `41% 2h` | 5-hour usage limit: percent used and time until it resets. |
-| `92% 3d` | Weekly usage limit: percent used and time until it resets. Either limit turns bold red at 90%. |
+| `92% 3d` | Weekly usage limit: percent used and time until it resets. Either limit turns yellow at 70% and bold red at 90%. |
 | `my-project ⎇  main` | The git repository (or worktree) folder and current branch. |
 
 The usage limits only show on a Claude subscription. Claude Code's own hint line (`? for shortcuts`, `esc to interrupt`) stays underneath.

@@ -9,6 +9,7 @@ const FAINT = '#585858' // 240
 const GRAY = '#8a8a8a' // 245
 const EMPTY = '#444444' // 238
 const ORANGE = '#ffaf00' // 214
+const YELLOW = '#ffff00' // 226
 const RED = '#ff0000' // 196
 
 const EFFORT: Record<string, { glyph: string; color: string }> = {
@@ -181,6 +182,8 @@ export const register: Register = on => {
     const percent = (pct: number) =>
       pct >= 90 ? (
         <Text color={RED} bold>{Math.round(pct)}%</Text>
+      ) : pct >= 70 ? (
+        <Text color={YELLOW}>{Math.round(pct)}%</Text>
       ) : (
         <Text color={FAINT}>{Math.round(pct)}%</Text>
       )
