@@ -39,6 +39,19 @@ In the desktop app, where `/plugin` doesn't run: click + next to the prompt box,
 
 If you also have a `statusLine` command in `settings.json`, remove it to avoid showing two lines.
 
+## Updates
+
+Claude Code doesn't auto-update plugins from third-party marketplaces by default. To get new versions automatically, run `/plugin`, open Marketplaces, select `claude-usage-statusline` and turn on auto-update. Updates then install when Claude Code starts.
+
+To update by hand instead:
+
+```
+claude plugin marketplace update claude-usage-statusline
+claude plugin update usage-statusline@claude-usage-statusline
+```
+
+Restart Claude Code to apply an update.
+
 ## License
 
 MIT
